@@ -1,12 +1,15 @@
 version: "3.9"
 
 services:
-  main-be:
-    container_name: main-be
-    image: main-be:latest
+  auth-be:
+    container_name: auth-be
+    image: auth-be:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8090:8090"
+      - "8060:8060"
     restart: unless-stopped
+
+volumes:
+  postgres_data:
