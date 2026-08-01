@@ -12,8 +12,15 @@ type CheckEmployeeRequest struct {
 	EmployeeNo string `json:"employee_no" binding:"required"`
 }
 
+type EmployeeInfo struct {
+	EmployeeNo string `json:"employee_no"`
+	Name       string `json:"name"`
+	Position   string `json:"position"`
+}
+
 type CheckEmployeeResponse struct {
-	Status CheckEmployeeStatus `json:"status"`
+	Status   CheckEmployeeStatus `json:"status"`
+	Employee *EmployeeInfo       `json:"employee"`
 }
 
 type RegisterRequest struct {

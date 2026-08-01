@@ -28,20 +28,21 @@ func (h *Handler) CheckEmployee(c *gin.Context) {
 		return
 	}
 
-	status, err := h.service.CheckEmployee(c.Request.Context(), req)
+	response, err := h.service.CheckEmployee(
+		c.Request.Context(),
+		req,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": err.Error(),
+			"message": "failed to check employee",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data": CheckEmployeeResponse{
-			Status: status,
-		},
+		"data":    response,
 	})
 }
 

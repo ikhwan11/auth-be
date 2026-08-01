@@ -34,24 +34,47 @@ func NewService(
 func (s *Service) CheckEmployee(
 	ctx context.Context,
 	req CheckEmployeeRequest,
-) (CheckEmployeeStatus, error) {
-	_, err := s.employeeRepo.FindByEmployeeNo(ctx, req.EmployeeNo)
+) (*CheckEmployeeResponse, error) {
+	employeeData, err := s.employeeRepo.FindByEmployeeNo(
+		ctx,
+		req.EmployeeNo,
+	)
 	if err != nil {
 		if errors.Is(err, employee.ErrEmployeeNotFound) {
-			return CheckEmployeeStatusNotFound, nil
+			return &CheckEmployeeResponse{
+				Status:   CheckEmployeeStatusNotFound,
+				Employee: nil,
+			}, nil
 		}
-		return "", err
+
+		return nil, err
 	}
 
-	_, err = s.userRepo.FindByEmployeeNo(ctx, req.EmployeeNo)
+	employeeInfo := &EmployeeInfo{
+		EmployeeNo: employeeData.EmployeeNo,
+		Name:       employeeData.Name,
+		Position:   employeeData.Position,
+	}
+
+	_, err = s.userRepo.FindByEmployeeNo(
+		ctx,
+		req.EmployeeNo,
+	)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
-			return CheckEmployeeStatusRegister, nil
+			return &CheckEmployeeResponse{
+				Status:   CheckEmployeeStatusRegister,
+				Employee: employeeInfo,
+			}, nil
 		}
-		return "", err
+
+		return nil, err
 	}
 
-	return CheckEmployeeStatusLogin, nil
+	return &CheckEmployeeResponse{
+		Status:   CheckEmployeeStatusLogin,
+		Employee: employeeInfo,
+	}, nil
 }
 
 func (s *Service) Register(
