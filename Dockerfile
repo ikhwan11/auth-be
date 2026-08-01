@@ -14,8 +14,8 @@ RUN go mod download
 COPY . .
 
 # Build aplikasi dari cmd/api
-RUN go build -o main ./cmd/api
+RUN go build -o auth-be ./cmd/api
 
-EXPOSE 8090
+EXPOSE 8060
 
-CMD ["./main"]
+CMD ["./auth-be"]
