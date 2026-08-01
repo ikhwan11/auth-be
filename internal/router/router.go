@@ -2,12 +2,20 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/ikhwan11/auth-be/internal/container"
 )
 
 func Setup(app *container.Container) *gin.Engine {
 	r := gin.Default()
+
+	// Swagger
+	r.GET(
+		"/swagger/*any",
+		ginSwagger.WrapHandler(swaggerFiles.Handler),
+	)
 
 	// Health Check
 	r.GET("/health", func(c *gin.Context) {

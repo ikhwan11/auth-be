@@ -1,9 +1,17 @@
 package main
 
+// @title Auth Service API
+// @version 1.0
+// @description Authentication and Authorization Service API
+// @host localhost:8060
+// @BasePath /
+
 import (
 	"fmt"
 	"log"
 	"os"
+
+	_ "github.com/ikhwan11/auth-be/docs"
 
 	"github.com/ikhwan11/auth-be/internal/config"
 	"github.com/ikhwan11/auth-be/internal/container"
