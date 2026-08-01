@@ -7,6 +7,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type JWTConfig struct {
+	Secret         string
+	AccessExpired  string
+	RefreshExpired string
+	Issuer         string
+}
+
 type AppConfig struct {
 	AppName string
 	AppPort string
@@ -14,8 +21,7 @@ type AppConfig struct {
 	EmployeeDB database.Config
 	AuthDB     database.Config
 
-	JWTSecret  string
-	JWTExpired string
+	JWT JWTConfig
 }
 
 func Load() AppConfig {
@@ -43,8 +49,12 @@ func Load() AppConfig {
 			SSLMode:  getEnv("AUTH_DB_SSLMODE", "disable"),
 		},
 
-		JWTSecret:  getEnv("JWT_SECRET", ""),
-		JWTExpired: getEnv("JWT_EXPIRED", "15m"),
+		JWT: JWTConfig{
+			Secret:         getEnv("JWT_SECRET", ""),
+			AccessExpired:  getEnv("JWT_ACCESS_EXPIRED", "15m"),
+			RefreshExpired: getEnv("JWT_REFRESH_EXPIRED", "168h"),
+			Issuer:         getEnv("JWT_ISSUER", "auth-service"),
+		},
 	}
 }
 
