@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/ikhwan11/auth-be/internal/config"
+	"github.com/ikhwan11/auth-be/internal/container"
 	"github.com/ikhwan11/auth-be/internal/database"
 	"github.com/ikhwan11/auth-be/internal/router"
 )
@@ -19,9 +19,9 @@ func main() {
 		}
 	}
 
-	// WIRING DATABASES
 	cfg := config.Load()
 
+	// WIRING DATABASES
 	fmt.Printf("%+v\n", cfg.AuthDB)
 
 	employeeDB, err := database.NewConnection(cfg.EmployeeDB)
@@ -36,13 +36,22 @@ func main() {
 	}
 	defer authDB.Close()
 
+	// CONTAINER SECTION
+	appContainer, err := container.New(
+		employeeDB,
+		authDB,
+		cfg,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// ROUTES SECTION
+	r := router.Setup(appContainer)
 
-	r := router.Setup()
+	log.Println("🚀 Server running on :" + cfg.AppPort)
 
-	log.Println("🚀 Server running on :8060")
-
-	if err := http.ListenAndServe(":8060", r); err != nil {
+	if err := r.Run(":" + cfg.AppPort); err != nil {
 		log.Fatal(err)
 	}
 }

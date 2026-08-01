@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -53,7 +52,7 @@ func (j *JWT) GenerateAccessToken(user UserIdentity) (string, error) {
 		Role:       user.Role,
 
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   strconv.FormatInt(user.UserID, 10),
+			Subject:   user.UserID.String(),
 			Issuer:    j.issuer,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(j.accessExpired)),
@@ -70,7 +69,7 @@ func (j *JWT) GenerateRefreshToken(user UserIdentity) (string, error) {
 
 	claims := RefreshClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   strconv.FormatInt(user.UserID, 10),
+			Subject:   user.UserID.String(),
 			Issuer:    j.issuer,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(j.refreshExpired)),
@@ -110,4 +109,20 @@ func (j *JWT) ValidateToken(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func (j *JWT) RefreshTokenExpiry() time.Time {
+	return time.Now().Add(j.refreshExpired)
+}
+
+func (j *JWT) AccessTokenExpiry() time.Time {
+	return time.Now().Add(j.accessExpired)
+}
+
+func (j *JWT) AccessTokenDuration() time.Duration {
+	return j.accessExpired
+}
+
+func (j *JWT) RefreshTokenDuration() time.Duration {
+	return j.refreshExpired
 }
