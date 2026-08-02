@@ -3,6 +3,7 @@ package container
 import (
 	"github.com/jmoiron/sqlx"
 
+	"github.com/ikhwan11/auth-be/internal/application"
 	"github.com/ikhwan11/auth-be/internal/auth"
 	"github.com/ikhwan11/auth-be/internal/config"
 	"github.com/ikhwan11/auth-be/internal/employee"
@@ -11,7 +12,8 @@ import (
 )
 
 type Container struct {
-	AuthHandler *auth.Handler
+	AuthHandler        *auth.Handler
+	ApplicationHandler *application.Handler
 }
 
 func New(
@@ -42,7 +44,18 @@ func New(
 
 	authHandler := auth.NewHandler(authService)
 
+	applicationRepo := application.NewRepository(authDB)
+
+	applicationService := application.NewService(
+		applicationRepo,
+	)
+
+	applicationHandler := application.NewHandler(
+		applicationService,
+	)
+
 	return &Container{
-		AuthHandler: authHandler,
+		AuthHandler:        authHandler,
+		ApplicationHandler: applicationHandler,
 	}, nil
 }

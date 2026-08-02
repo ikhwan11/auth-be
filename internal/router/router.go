@@ -80,5 +80,14 @@ func Setup(app *container.Container) *gin.Engine {
 		auth.POST("/logout", app.AuthHandler.Logout)
 	}
 
+	applications := r.Group("/applications")
+	{
+		applications.POST("", app.ApplicationHandler.Create)
+		applications.GET("", app.ApplicationHandler.List)
+		applications.GET("/:id", app.ApplicationHandler.Get)
+		applications.PUT("/:id", app.ApplicationHandler.Update)
+		applications.DELETE("/:id", app.ApplicationHandler.Delete)
+	}
+
 	return r
 }
