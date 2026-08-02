@@ -24,6 +24,7 @@ func (s *Service) Create(
 		Name:      req.Name,
 		Code:      req.Code,
 		URL:       req.URL,
+		IconID:    req.IconID,
 		IsDefault: req.IsDefault,
 		IsActive:  true,
 	}

@@ -1,4 +1,4 @@
-package application
+package application_icon
 
 import (
 	"context"
@@ -9,12 +9,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+var ErrApplicationIconNotFound = errors.New("application icon not found")
+
 type Repository interface {
-	Create(ctx context.Context, app *Application) error
-	FindAll(ctx context.Context) ([]Application, error)
-	FindByID(ctx context.Context, id uuid.UUID) (*Application, error)
-	Update(ctx context.Context, id uuid.UUID, req UpdateApplicationRequest) error
+	Create(ctx context.Context, icon *ApplicationIcon) error
+	FindAll(ctx context.Context) ([]ApplicationIcon, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*ApplicationIcon, error)
+	Update(ctx context.Context, id uuid.UUID, icon *ApplicationIcon) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	FindFileByID(ctx context.Context, id uuid.UUID) (*ApplicationIcon, error)
 }
 
 type repository struct {
@@ -29,22 +32,18 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *repository) Create(
 	ctx context.Context,
-	app *Application,
+	icon *ApplicationIcon,
 ) error {
 	const query = `
-		INSERT INTO applications (
+		INSERT INTO application_icons (
 			name,
-			code,
-			url,
-			icon_id,
-			is_default
+			file_data,
+			mime_type
 		)
 		VALUES (
 			$1,
 			$2,
-			$3,
-			$4,
-			$5
+			$3
 		)
 		RETURNING
 			id,
@@ -55,115 +54,134 @@ func (r *repository) Create(
 	return r.db.QueryRowxContext(
 		ctx,
 		query,
-		app.Name,
-		app.Code,
-		app.URL,
-		app.IsDefault,
+		icon.Name,
+		icon.FileData,
+		icon.MimeType,
 	).Scan(
-		&app.ID,
-		&app.CreatedAt,
-		&app.UpdatedAt,
+		&icon.ID,
+		&icon.CreatedAt,
+		&icon.UpdatedAt,
 	)
 }
 
 func (r *repository) FindAll(
 	ctx context.Context,
-) ([]Application, error) {
+) ([]ApplicationIcon, error) {
 	const query = `
 		SELECT
 			id,
 			name,
-			code,
-			url,
-			icon_id,
-			is_default,
-			is_active,
+			mime_type,
 			created_at,
 			updated_at
-		FROM applications
+		FROM application_icons
 		ORDER BY name ASC;
 	`
 
-	var applications []Application
+	var icons []ApplicationIcon
 
 	err := r.db.SelectContext(
 		ctx,
-		&applications,
+		&icons,
 		query,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return applications, nil
+	return icons, nil
 }
 
 func (r *repository) FindByID(
 	ctx context.Context,
 	id uuid.UUID,
-) (*Application, error) {
+) (*ApplicationIcon, error) {
 	const query = `
 		SELECT
 			id,
 			name,
-			code,
-			url,
-			icon_id,
-			is_default,
-			is_active,
+			mime_type,
 			created_at,
 			updated_at
-		FROM applications
+		FROM application_icons
 		WHERE id = $1
 		LIMIT 1;
 	`
 
-	var app Application
+	var icon ApplicationIcon
 
 	err := r.db.GetContext(
 		ctx,
-		&app,
+		&icon,
 		query,
 		id,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrApplicationNotFound
+			return nil, ErrApplicationIconNotFound
 		}
 
 		return nil, err
 	}
 
-	return &app, nil
+	return &icon, nil
+}
+
+func (r *repository) FindFileByID(
+	ctx context.Context,
+	id uuid.UUID,
+) (*ApplicationIcon, error) {
+	const query = `
+		SELECT
+			id,
+			name,
+			file_data,
+			mime_type
+		FROM application_icons
+		WHERE id = $1
+		LIMIT 1;
+	`
+
+	var icon ApplicationIcon
+
+	err := r.db.GetContext(
+		ctx,
+		&icon,
+		query,
+		id,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrApplicationIconNotFound
+		}
+
+		return nil, err
+	}
+
+	return &icon, nil
 }
 
 func (r *repository) Update(
 	ctx context.Context,
 	id uuid.UUID,
-	req UpdateApplicationRequest,
+	icon *ApplicationIcon,
 ) error {
 	const query = `
-		UPDATE applications
+		UPDATE application_icons
 		SET
 			name = $1,
-			code = $2,
-			url = $3,
-			icon_id = $4,
-			is_default = $5,
-			is_active = $6,
+			file_data = $2,
+			mime_type = $3,
 			updated_at = NOW()
-		WHERE id = $7;
+		WHERE id = $4;
 	`
 
 	result, err := r.db.ExecContext(
 		ctx,
 		query,
-		req.Name,
-		req.Code,
-		req.URL,
-		req.IconID,
-		req.IsDefault,
-		req.IsActive,
+		icon.Name,
+		icon.FileData,
+		icon.MimeType,
 		id,
 	)
 	if err != nil {
@@ -176,7 +194,7 @@ func (r *repository) Update(
 	}
 
 	if rows == 0 {
-		return ErrApplicationNotFound
+		return ErrApplicationIconNotFound
 	}
 
 	return nil
@@ -187,7 +205,7 @@ func (r *repository) Delete(
 	id uuid.UUID,
 ) error {
 	const query = `
-		DELETE FROM applications
+		DELETE FROM application_icons
 		WHERE id = $1;
 	`
 
@@ -206,7 +224,7 @@ func (r *repository) Delete(
 	}
 
 	if rows == 0 {
-		return ErrApplicationNotFound
+		return ErrApplicationIconNotFound
 	}
 
 	return nil

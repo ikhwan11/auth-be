@@ -89,5 +89,13 @@ func Setup(app *container.Container) *gin.Engine {
 		applications.DELETE("/:id", app.ApplicationHandler.Delete)
 	}
 
+	applicationIcons := r.Group("/application-icons")
+	{
+		applicationIcons.POST("", app.ApplicationIconHandler.Create)
+		applicationIcons.GET("", app.ApplicationIconHandler.List)
+		applicationIcons.GET("/:id", app.ApplicationIconHandler.Get)
+		applicationIcons.GET("/:id/file", app.ApplicationIconHandler.File)
+	}
+
 	return r
 }
