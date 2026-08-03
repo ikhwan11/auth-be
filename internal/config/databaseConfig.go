@@ -36,7 +36,7 @@ func Load() AppConfig {
 			Port:     getEnv("EMPLOYEE_DB_PORT", "5432"),
 			User:     getEnv("EMPLOYEE_DB_USER", "postgres"),
 			Password: getEnv("EMPLOYEE_DB_PASSWORD", ""),
-			DBName:   getEnv("EMPLOYEE_DB_NAME", "employee"),
+			DBName:   getEnv("EMPLOYEE_DB_NAME", "my_company"),
 			SSLMode:  getEnv("EMPLOYEE_DB_SSLMODE", "disable"),
 		},
 
